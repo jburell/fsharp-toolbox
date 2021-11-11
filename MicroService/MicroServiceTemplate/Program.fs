@@ -29,41 +29,26 @@ module Program =
                 webBuilder.UseStartup<Startup>() |> ignore
             )
 
-    let api = pipeline {
-        plug acceptJson
-        set_header "x-pipeline-type" "Api"
-    }
-
     let apiRouter = router {
-//        not_found_handler (text "Api 404")
-        pipe_through api
-
-        forward "/someApi" WeatherForecastHttpHandler.weatherForecastController
+        not_found_handler (text "Api 404")
+        forward "/weather" WeatherForecastHttpHandler.weatherForecastController
     }
 
     let appRouter = router {
         forward "/api" apiRouter
     }
 
-
-    let endpointPipe = pipeline {
-        plug head
-        plug requestId
-    }
     let app = application {
-        pipe_through endpointPipe
-
-//        error_handler (fun ex _ -> pipeline { render_html (InternalError.layout ex) })
+        error_handler (fun ex _ -> pipeline {
+            set_status_code 500
+            json {| description = "Internal server error" |}
+        })
         use_router appRouter
         url "http://0.0.0.0:8085/"
-        memory_cache
-        use_static "static"
         use_gzip
-        use_config (fun _ -> {connectionString = "DataSource=database.sqlite"} ) //TODO: Set development time configuration
     }
 
     [<EntryPoint>]
     let main args =
-//        CreateHostBuilder(args).Build().Run()
         run app
         exitCode
