@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      run: dotnet restore --project MicroService/MicroServiceTemplate
+      run: dotnet restore MicroService/MicroServiceTemplate
     - name: Build
-      run: dotnet build --no-restore --project MicroService/MicroServiceTemplate
+      run: dotnet build --no-restore MicroService/MicroServiceTemplate
     - name: Test
       run: dotnet test --no-build --verbosity normal
